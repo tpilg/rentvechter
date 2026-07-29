@@ -4,76 +4,168 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RentVechter — Check your legal max rent (WWS points)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #14213d;
-    --ink-soft: #4b5563;
-    --bg: #f7f7f5;
-    --card: #ffffff;
-    --accent: #d3441e;
-    --accent-dark: #a83416;
-    --line: #e5e2db;
-    --ok: #1c7c3c;
-    --warn: #b03a1f;
-    --social: #2f6f4f;
-    --mid: #b07d1c;
-    --free: #6b6b6b;
+    --ink: #2A2620;
+    --ink-soft: #5A5546;
+    --bg: #F0EAD9;
+    --card: #FAF7EC;
+    --card-alt: #F3EEDC;
+    --line: #DED2AE;
+    --accent: #D4FF5C;
+    --ok: #3F6B4A;
+    --warn: #A6432A;
+    --social: #3F6B4A;
+    --mid: #8A6A2A;
+    --free: #6B6558;
+    --font-serif: "Fraunces", Georgia, serif;
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
     background: var(--bg);
     color: var(--ink);
     line-height: 1.5;
   }
-  header {
-    padding: 28px 20px 20px;
-    max-width: 780px;
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(240, 234, 217, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    max-width: 900px;
     margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
   }
-  header h1 {
-    font-size: 1.9rem;
-    margin: 0 0 6px;
-    letter-spacing: -0.02em;
+  .wordmark {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
   }
-  header h1 span { color: var(--accent); }
-  header p {
+  .nav-links {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    justify-content: center;
+  }
+  .nav-links a {
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+  }
+  .nav-links a:hover { background: rgba(42, 38, 32, 0.07); }
+  .btn-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 0.88rem;
+    padding: 10px 20px;
+    border-radius: 999px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+  }
+  .btn-dark { background: var(--ink); color: var(--bg); }
+  .btn-dark:hover { background: #3d382e; }
+  @media (max-width: 620px) { .nav-links { display: none; } }
+
+  .hero {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 56px 20px 36px;
+    text-align: left;
+  }
+  .hero h1 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    line-height: 0.98;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  .hero h1 span {
+    background: var(--accent);
+    color: var(--ink);
+    padding: 0 0.12em;
+    border-radius: 0.14em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .hero p {
+    font-family: var(--font-sans);
     color: var(--ink-soft);
     margin: 0;
-    font-size: 1rem;
-    max-width: 60ch;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    max-width: 58ch;
   }
+
   main {
-    max-width: 780px;
-    margin: 0 auto 60px;
+    max-width: 860px;
+    margin: 0 auto 80px;
     padding: 0 20px;
   }
   .card {
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 22px 24px;
-    margin-bottom: 18px;
+    border-radius: 20px;
+    padding: 28px 30px;
+    margin-bottom: 20px;
   }
   .card h2 {
-    font-size: 1.05rem;
-    margin: 0 0 14px;
-    padding-bottom: 10px;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 18px;
+    padding-bottom: 14px;
     border-bottom: 1px solid var(--line);
+  }
+  .card h2 .hint {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--ink-soft);
   }
   .row {
     display: flex;
-    gap: 16px;
+    gap: 18px;
     flex-wrap: wrap;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
   .field { flex: 1 1 220px; }
   label {
     display: block;
+    font-family: var(--font-sans);
     font-size: 0.85rem;
     font-weight: 600;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     color: var(--ink);
   }
   label .hint {
@@ -83,40 +175,46 @@
   }
   input[type="number"], input[type="text"], input[type="date"], select {
     width: 100%;
-    padding: 9px 10px;
-    border: 1px solid #cfcbc0;
-    border-radius: 7px;
+    padding: 11px 18px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-family: var(--font-sans);
     font-size: 0.95rem;
     background: #fff;
     color: var(--ink);
   }
-  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  select { border-radius: 16px; }
+  input:focus, select:focus { outline: 2px solid var(--ink); outline-offset: 2px; }
   fieldset {
     border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin: 0 0 14px;
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin: 0 0 16px;
   }
   fieldset legend {
+    font-family: var(--font-sans);
     font-size: 0.85rem;
     font-weight: 600;
-    padding: 0 6px;
+    padding: 0 8px;
+    color: var(--ink);
   }
-  .checkrow { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 0.92rem; }
-  .checkrow input { width: auto; }
+  .checkrow { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: 0.92rem; font-family: var(--font-sans); }
+  .checkrow input { width: auto; accent-color: var(--ink); }
   button.calc {
     width: 100%;
-    padding: 13px;
-    background: var(--accent);
-    color: #fff;
+    padding: 16px;
+    background: var(--ink);
+    color: var(--bg);
     border: none;
-    border-radius: 8px;
+    border-radius: 999px;
+    font-family: var(--font-sans);
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 6px;
+    margin-top: 8px;
+    transition: background 0.15s ease;
   }
-  button.calc:hover { background: var(--accent-dark); }
+  button.calc:hover { background: #3d382e; }
 
   #result { display: none; }
   .result-top {
@@ -125,87 +223,101 @@
     flex-wrap: wrap;
   }
   .stat {
-    flex: 1 1 160px;
-    background: #faf9f6;
+    flex: 1 1 200px;
+    background: var(--card-alt);
     border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 14px 16px;
-    text-align: center;
+    border-radius: 18px;
+    padding: 20px 22px;
+    text-align: left;
   }
-  .stat .num { font-size: 1.7rem; font-weight: 700; }
-  .stat .lbl { font-size: 0.78rem; color: var(--ink-soft); margin-top: 2px; }
+  .stat .num { font-family: var(--font-serif); font-size: 2.1rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.05; }
+  .stat .lbl { font-family: var(--font-sans); font-size: 0.8rem; color: var(--ink-soft); margin-top: 8px; }
+  .stat.stat-hero { background: var(--accent); border-color: var(--accent); }
+  .stat.stat-hero .num, .stat.stat-hero .lbl { color: var(--ink); }
+  @media (max-width: 640px) {
+    .result-top { flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+    .result-top .stat { scroll-snap-align: start; flex: 0 0 80%; }
+  }
   .segment-badge {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 5px 14px;
     border-radius: 999px;
-    font-size: 0.78rem;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
     font-weight: 700;
-    color: #fff;
-    margin-top: 6px;
+    color: var(--bg);
+    margin-top: 10px;
   }
   .segment-social { background: var(--social); }
   .segment-mid { background: var(--mid); }
   .segment-free { background: var(--free); }
 
   .verdict {
-    margin-top: 18px;
-    padding: 14px 16px;
-    border-radius: 10px;
+    margin-top: 22px;
+    padding: 18px 20px;
+    border-radius: 16px;
+    font-family: var(--font-sans);
     font-size: 0.95rem;
+    background: var(--card-alt);
+    border: 1px solid var(--line);
   }
-  .verdict.overpay { background: #fbeae5; border: 1px solid #e7b6a6; color: var(--warn); }
-  .verdict.ok { background: #e9f5ec; border: 1px solid #b9dcc2; color: var(--ok); }
-  .verdict.free { background: #f0f0ee; border: 1px solid var(--line); color: var(--ink-soft); }
+  .verdict.overpay { border-left: 4px solid var(--accent); }
+  .verdict.ok { border-left: 4px solid var(--social); }
+  .verdict.free { border-left: 4px solid var(--line); color: var(--ink-soft); }
 
-  .steps { margin-top: 16px; }
-  .steps ol { margin: 8px 0 0; padding-left: 20px; }
-  .steps li { margin-bottom: 6px; font-size: 0.92rem; }
+  .steps { margin-top: 20px; font-family: var(--font-sans); }
+  .steps ol { margin: 10px 0 0; padding-left: 22px; }
+  .steps li { margin-bottom: 8px; font-size: 0.92rem; }
 
   .disclaimer {
+    font-family: var(--font-sans);
     font-size: 0.8rem;
     color: var(--ink-soft);
-    margin-top: 10px;
+    margin-top: 14px;
     border-top: 1px solid var(--line);
-    padding-top: 10px;
+    padding-top: 14px;
   }
-  .breakdown { margin-top: 14px; font-size: 0.85rem; color: var(--ink-soft); }
+  .breakdown { margin-top: 18px; font-family: var(--font-sans); font-size: 0.85rem; color: var(--ink-soft); }
   .breakdown table { width: 100%; border-collapse: collapse; }
-  .breakdown td { padding: 3px 0; border-bottom: 1px dashed var(--line); }
-  .breakdown td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .breakdown td { padding: 5px 0; border-bottom: 1px dashed var(--line); }
+  .breakdown td:last-child { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
 
   #letterSection { display: none; }
-  #letterSection h2 { margin-bottom: 4px; }
-  .letter-note { font-size: 0.85rem; color: var(--ink-soft); margin-bottom: 14px; }
-  .letter-actions { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  #letterSection h2 { margin-bottom: 6px; }
+  .letter-note { font-family: var(--font-sans); font-size: 0.85rem; color: var(--ink-soft); margin-bottom: 16px; }
+  .letter-actions { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
   .letter-actions button {
-    padding: 8px 14px;
-    border-radius: 7px;
-    border: 1px solid #cfcbc0;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
     background: #fff;
     color: var(--ink);
+    font-family: var(--font-sans);
     font-size: 0.85rem;
     cursor: pointer;
     font-weight: 600;
+    transition: background 0.15s ease;
   }
-  .letter-actions button:hover { background: #f2f0ea; }
-  .letter-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .letter-actions button.primary:hover { background: var(--accent-dark); }
+  .letter-actions button:hover { background: var(--card-alt); }
+  .letter-actions button.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .letter-actions button.primary:hover { background: #3d382e; }
   #letterText {
     width: 100%;
     min-height: 420px;
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 0.92rem;
-    line-height: 1.6;
-    padding: 20px 22px;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    padding: 28px 30px;
     border: 1px solid var(--line);
-    border-radius: 10px;
-    background: #fffefb;
+    border-radius: 20px;
+    background: #FFFDF6;
     color: var(--ink);
     white-space: pre-wrap;
     resize: vertical;
   }
   .deadline-flag {
-    margin-top: 10px;
+    margin-top: 12px;
+    font-family: var(--font-sans);
     font-size: 0.82rem;
     color: var(--warn);
     font-weight: 600;
@@ -213,9 +325,10 @@
 
   footer {
     text-align: center;
+    font-family: var(--font-sans);
     color: var(--ink-soft);
     font-size: 0.78rem;
-    padding: 20px;
+    padding: 32px 20px;
   }
 
   @media print {
@@ -230,10 +343,21 @@
 </head>
 <body>
 
-<header>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="wordmark" href="#calcForm">RentVechter</a>
+    <nav class="nav-links">
+      <a href="#calcForm">Calculator</a>
+      <a href="https://www.huurcommissie.nl" target="_blank" rel="noopener">Huurcommissie</a>
+    </nav>
+    <a class="btn-pill btn-dark" href="#calcForm">Start now</a>
+  </div>
+</header>
+
+<section class="hero">
   <h1>Rent<span>Vechter</span></h1>
   <p>Find out your home's legal maximum rent under the Dutch WWS points system (Woningwaarderingsstelsel), and whether you're being overcharged.</p>
-</header>
+</section>
 
 <main>
   <form id="calcForm">
@@ -429,7 +553,7 @@
         <div class="num" id="maxRentOut">–</div>
         <div class="lbl">Estimated max legal rent / month</div>
       </div>
-      <div class="stat">
+      <div class="stat stat-hero">
         <div class="num" id="diffOut">–</div>
         <div class="lbl">Difference vs. what you pay</div>
       </div>
@@ -452,8 +576,8 @@
     <div class="letter-note" id="letterNote"></div>
     <div class="deadline-flag" id="deadlineFlag"></div>
     <div class="letter-actions">
-      <button type="button" class="primary" id="copyLetterBtn">Copy text</button>
-      <button type="button" id="downloadLetterBtn">Download .txt</button>
+      <button type="button" id="copyLetterBtn">Copy text</button>
+      <button type="button" class="primary" id="downloadLetterBtn">Download .txt</button>
       <button type="button" id="printLetterBtn">Print / Save as PDF</button>
     </div>
     <textarea id="letterText" spellcheck="false"></textarea>
