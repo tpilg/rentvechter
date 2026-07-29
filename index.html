@@ -93,7 +93,26 @@
   }
   .btn-dark { background: var(--ink); color: var(--bg); }
   .btn-dark:hover { background: #3d382e; }
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--ink);
+    font-weight: 500;
+    border: 1px solid var(--ink);
+  }
+  .btn-outline:hover { background: rgba(42, 38, 32, 0.07); }
+  .btn-outline .btn-icon { width: 15px; height: 15px; flex-shrink: 0; }
+  .btn-outline .btn-label { margin-left: 6px; }
   @media (max-width: 620px) { .nav-links { display: none; } }
+  @media (max-width: 480px) {
+    .btn-outline { padding: 10px; }
+    .btn-outline .btn-label { display: none; }
+    .btn-outline .btn-icon { margin: 0; }
+  }
 
   .hero {
     max-width: 900px;
@@ -350,7 +369,13 @@
       <a href="#calcForm">Calculator</a>
       <a href="https://www.huurcommissie.nl" target="_blank" rel="noopener">Huurcommissie</a>
     </nav>
-    <a class="btn-pill btn-dark" href="#calcForm">Start now</a>
+    <div class="nav-actions">
+      <a class="btn-pill btn-outline" href="mailto:tylerwpilgrim@gmail.com?subject=RentVechter%20feedback" aria-label="Give feedback">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18v12H3z"/><path d="m3 7 9 6 9-6"/></svg>
+        <span class="btn-label">Give feedback</span>
+      </a>
+      <a class="btn-pill btn-dark" href="#calcForm">Start now</a>
+    </div>
   </div>
 </header>
 
