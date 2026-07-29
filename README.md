@@ -46,3 +46,4 @@ Open a terminal in this folder, run `claude`, and paste:
 - v1.2: shareable calculation links (no login)
 - v2: accounts, live Huurcommissie case tracking, address-based auto-lookup of energy label/WOZ value
 - v3: landlord/building reputation layer
+
