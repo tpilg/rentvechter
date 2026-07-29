@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RentVechter — Check your legal max rent (WWS points)</title>
+<style>
+  :root {
+    --ink: #14213d;
+    --ink-soft: #4b5563;
+    --bg: #f7f7f5;
+    --card: #ffffff;
+    --accent: #d3441e;
+    --accent-dark: #a83416;
+    --line: #e5e2db;
+    --ok: #1c7c3c;
+    --warn: #b03a1f;
+    --social: #2f6f4f;
+    --mid: #b07d1c;
+    --free: #6b6b6b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  header {
+    padding: 28px 20px 20px;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+  header h1 {
+    font-size: 1.9rem;
+    margin: 0 0 6px;
+    letter-spacing: -0.02em;
+  }
+  header h1 span { color: var(--accent); }
+  header p {
+    color: var(--ink-soft);
+    margin: 0;
+    font-size: 1rem;
+    max-width: 60ch;
+  }
+  main {
+    max-width: 780px;
+    margin: 0 auto 60px;
+    padding: 0 20px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 18px;
+  }
+  .card h2 {
+    font-size: 1.05rem;
+    margin: 0 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .field { flex: 1 1 220px; }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+  label .hint {
+    font-weight: 400;
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+  }
+  input[type="number"], input[type="text"], input[type="date"], select {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid #cfcbc0;
+    border-radius: 7px;
+    font-size: 0.95rem;
+    background: #fff;
+    color: var(--ink);
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  fieldset {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 0 0 14px;
+  }
+  fieldset legend {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0 6px;
+  }
+  .checkrow { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 0.92rem; }
+  .checkrow input { width: auto; }
+  button.calc {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  button.calc:hover { background: var(--accent-dark); }
+
+  #result { display: none; }
+  .result-top {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    flex: 1 1 160px;
+    background: #faf9f6;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .stat .num { font-size: 1.7rem; font-weight: 700; }
+  .stat .lbl { font-size: 0.78rem; color: var(--ink-soft); margin-top: 2px; }
+  .segment-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 6px;
+  }
+  .segment-social { background: var(--social); }
+  .segment-mid { background: var(--mid); }
+  .segment-free { background: var(--free); }
+
+  .verdict {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+  }
+  .verdict.overpay { background: #fbeae5; border: 1px solid #e7b6a6; color: var(--warn); }
+  .verdict.ok { background: #e9f5ec; border: 1px solid #b9dcc2; color: var(--ok); }
+  .verdict.free { background: #f0f0ee; border: 1px solid var(--line); color: var(--ink-soft); }
+
+  .steps { margin-top: 16px; }
+  .steps ol { margin: 8px 0 0; padding-left: 20px; }
+  .steps li { margin-bottom: 6px; font-size: 0.92rem; }
+
+  .disclaimer {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+  }
+  .breakdown { margin-top: 14px; font-size: 0.85rem; color: var(--ink-soft); }
+  .breakdown table { width: 100%; border-collapse: collapse; }
+  .breakdown td { padding: 3px 0; border-bottom: 1px dashed var(--line); }
+  .breakdown td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+
+  #letterSection { display: none; }
+  #letterSection h2 { margin-bottom: 4px; }
+  .letter-note { font-size: 0.85rem; color: var(--ink-soft); margin-bottom: 14px; }
+  .letter-actions { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .letter-actions button {
+    padding: 8px 14px;
+    border-radius: 7px;
+    border: 1px solid #cfcbc0;
+    background: #fff;
+    color: var(--ink);
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .letter-actions button:hover { background: #f2f0ea; }
+  .letter-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .letter-actions button.primary:hover { background: var(--accent-dark); }
+  #letterText {
+    width: 100%;
+    min-height: 420px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    padding: 20px 22px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fffefb;
+    color: var(--ink);
+    white-space: pre-wrap;
+    resize: vertical;
+  }
+  .deadline-flag {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: var(--warn);
+    font-weight: 600;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+    padding: 20px;
+  }
+
+  @media print {
+    body * { visibility: hidden; }
+    #letterText, #letterText * { visibility: visible; }
+    #letterText {
+      position: absolute; top: 0; left: 0; width: 100%;
+      border: none; padding: 0; min-height: auto;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Rent<span>Vechter</span></h1>
+  <p>Find out your home's legal maximum rent under the Dutch WWS points system (Woningwaarderingsstelsel), and whether you're being overcharged.</p>
+</header>
+
+<main>
+  <form id="calcForm">
+
+    <div class="card">
+      <h2>1. Home basics</h2>
+      <div class="row">
+        <div class="field">
+          <label>Dwelling type</label>
+          <select id="dwellingType">
+            <option value="single">Single-family home (eengezinswoning) — no neighbours above/below</option>
+            <option value="multi">Apartment / duplex (meergezinswoning) — neighbours above/below</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Room surface area (m²) <span class="hint">living room, bedrooms, kitchen, bathroom — floor space, min 4m² per room counts</span></label>
+          <input type="number" id="roomArea" min="0" step="0.1" value="65">
+        </div>
+        <div class="field">
+          <label>Other spaces (m²) <span class="hint">storage, attic, garage — min 2m² per space counts</span></label>
+          <input type="number" id="otherArea" min="0" step="0.1" value="6">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Heated rooms <span class="hint">count of rooms with heating</span></label>
+          <input type="number" id="heatedRooms" min="0" step="1" value="4">
+        </div>
+        <div class="field">
+          <label>Heated other spaces <span class="hint">max 4 counted</span></label>
+          <input type="number" id="heatedOther" min="0" step="1" value="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2. Energy label</h2>
+      <div class="row">
+        <div class="field">
+          <label>Energy label <span class="hint">must be valid/registered — expired labels don't count</span></label>
+          <select id="energyLabel">
+            <option value="A++++">A++++</option>
+            <option value="A+++">A+++</option>
+            <option value="A++">A++</option>
+            <option value="A+">A+</option>
+            <option value="A" selected>A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E (penalty)</option>
+            <option value="F">F (penalty)</option>
+            <option value="G">G (penalty)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>3. Kitchen &amp; sanitary</h2>
+      <div class="row">
+        <div class="field">
+          <label>Kitchen counter length</label>
+          <select id="counterLen">
+            <option value="short">1–2 metres</option>
+            <option value="long">Longer than 2 metres</option>
+          </select>
+        </div>
+      </div>
+      <fieldset>
+        <legend>Kitchen extras</legend>
+        <div class="checkrow"><input type="checkbox" id="induction"><label for="induction" style="margin:0;font-weight:400;">Induction hob (+1.75 pts)</label></div>
+        <div class="checkrow"><input type="checkbox" id="oven"><label for="oven" style="margin:0;font-weight:400;">Built-in oven (+1 pt)</label></div>
+        <div class="checkrow"><input type="checkbox" id="dishwasher"><label for="dishwasher" style="margin:0;font-weight:400;">Dishwasher (+1.5 pts)</label></div>
+      </fieldset>
+      <div class="row">
+        <div class="field">
+          <label>Toilets <span class="hint">3 pts each</span></label>
+          <input type="number" id="toilets" min="0" step="1" value="1">
+        </div>
+        <div class="field">
+          <label>Sinks (wastafel) <span class="hint">1 pt each</span></label>
+          <input type="number" id="sinks" min="0" step="1" value="1">
+        </div>
+        <div class="field">
+          <label>Showers <span class="hint">4 pts each</span></label>
+          <input type="number" id="showers" min="0" step="1" value="1">
+        </div>
+        <div class="field">
+          <label>Baths <span class="hint">6 pts each</span></label>
+          <input type="number" id="baths" min="0" step="1" value="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>4. Outdoor space</h2>
+      <div class="row">
+        <div class="field">
+          <label>Private outdoor space (m²) <span class="hint">balcony, garden — 2 base pts + 0.35/m²</span></label>
+          <input type="number" id="privateOutdoor" min="0" step="0.1" value="6">
+        </div>
+        <div class="field">
+          <label>Shared outdoor space (m²)</label>
+          <input type="number" id="sharedOutdoor" min="0" step="0.1" value="0">
+        </div>
+        <div class="field">
+          <label># addresses sharing it</label>
+          <input type="number" id="sharedAddresses" min="1" step="1" value="1">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>5. Location (WOZ value)</h2>
+      <div class="row">
+        <div class="field">
+          <label>WOZ value (€) <span class="hint">from your gemeente's WOZ-beschikking</span></label>
+          <input type="number" id="wozValue" min="0" step="1000" value="300000">
+        </div>
+        <div class="field">
+          <label>Monument status</label>
+          <select id="monument">
+            <option value="none">None</option>
+            <option value="townscape">Protected townscape (+5% on max rent)</option>
+            <option value="local">Municipal/provincial monument (+15%)</option>
+            <option value="rijks">Rijksmonument (+35%)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>6. Your rent</h2>
+      <div class="row">
+        <div class="field">
+          <label>Kale huur you pay/are asked to pay (€/month) <span class="hint">bare rent, excluding service costs</span></label>
+          <input type="number" id="currentRent" min="0" step="1" value="1250">
+        </div>
+        <div class="field">
+          <label>How long have you lived there? <span class="hint">affects which route applies</span></label>
+          <select id="tenancyLength">
+            <option value="new">Less than 6 months / not yet signed</option>
+            <option value="established">More than 6 months</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>7. Your details <span class="hint" style="font-weight:400;">— only used to draft your letter, never sent anywhere</span></h2>
+      <div class="row">
+        <div class="field">
+          <label>Your full name</label>
+          <input type="text" id="yourName" placeholder="Jane Doe">
+        </div>
+        <div class="field">
+          <label>Rental property address</label>
+          <input type="text" id="propertyAddress" placeholder="Hoofdstraat 1, 1234 AB Amsterdam">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Landlord / agency name</label>
+          <input type="text" id="landlordName" placeholder="e.g. Vastgoed Beheer B.V.">
+        </div>
+        <div class="field">
+          <label>Landlord / agency address</label>
+          <input type="text" id="landlordAddress" placeholder="Kantoorweg 5, 1000 AA Amsterdam">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Lease start date <span class="hint">used for the 6-month filing deadline</span></label>
+          <input type="date" id="leaseStartDate">
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="calc">Calculate my legal max rent</button>
+  </form>
+
+  <div class="card" id="result">
+    <h2>Result</h2>
+    <div class="result-top">
+      <div class="stat">
+        <div class="num" id="pointsOut">–</div>
+        <div class="lbl">WWS points</div>
+        <div class="segment-badge" id="segmentBadge">–</div>
+      </div>
+      <div class="stat">
+        <div class="num" id="maxRentOut">–</div>
+        <div class="lbl">Estimated max legal rent / month</div>
+      </div>
+      <div class="stat">
+        <div class="num" id="diffOut">–</div>
+        <div class="lbl">Difference vs. what you pay</div>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdictBox"></div>
+
+    <div class="steps" id="stepsBox"></div>
+
+    <div class="breakdown" id="breakdownBox"></div>
+
+    <div class="disclaimer">
+      This is an indicative estimate for orientation only, based on the main WWS categories (surface area, heating, energy label, kitchen, sanitary, outdoor space, WOZ value, monument status). It does not cover every edge case (e.g. zorgwoningen, detailed common-area scoring) and the price-per-point conversion is a close linear approximation of the official 2026 table, not the table itself. For a binding calculation or to file a complaint, use the Huurcommissie's own Huurprijscheck at
+      <a href="https://www.huurcommissie.nl" target="_blank" rel="noopener">huurcommissie.nl</a>.
+    </div>
+  </div>
+
+  <div class="card" id="letterSection">
+    <h2 id="letterTitle">Your letter</h2>
+    <div class="letter-note" id="letterNote"></div>
+    <div class="deadline-flag" id="deadlineFlag"></div>
+    <div class="letter-actions">
+      <button type="button" class="primary" id="copyLetterBtn">Copy text</button>
+      <button type="button" id="downloadLetterBtn">Download .txt</button>
+      <button type="button" id="printLetterBtn">Print / Save as PDF</button>
+    </div>
+    <textarea id="letterText" spellcheck="false"></textarea>
+    <div class="letter-note" style="margin-top:12px;">
+      Edit freely before sending — this is a draft based on the WWS categories covered by this calculator, not a certified legal document. Send by registered post or email with a read receipt, and keep a copy for yourself.
+    </div>
+  </div>
+</main>
+
+<footer>RentVechter · not affiliated with the Huurcommissie or the Dutch government.</footer>
+
+<script>
+const ENERGY_LABEL_POINTS = {
+  single: { "A++++": 62, "A+++": 57, "A++": 52, "A+": 47, "A": 41, "B": 34, "C": 22, "D": 14, "E": -4, "F": -9, "G": -15 },
+  multi:  { "A++++": 58, "A+++": 53, "A++": 48, "A+": 43, "A": 37, "B": 30, "C": 15, "D": 11, "E": -4, "F": -9, "G": -15 }
+};
+
+const MONUMENT_SURCHARGE = { none: 0, townscape: 0.05, local: 0.15, rijks: 0.35 };
+
+// Linear approximation of the official 2026 Huurcommissie price table,
+// anchored on published bracket values: 144 pts = €939.73, 186 pts = €1228.07.
+const RATE_PER_POINT = (1228.07 - 939.73) / (186 - 144); // ≈ 6.8652
+const BASE_POINTS = 144;
+const BASE_RENT = 939.73;
+const SOCIAL_MAX_POINTS = 143;
+const SOCIAL_MAX_RENT = 932.93;
+const FREE_SECTOR_POINTS = 187;
+
+function priceForPoints(points) {
+  // Extend the same linear rate below 144 down to the social cap; matches
+  // the published €932.93 @ 143 pts within a few cents.
+  return BASE_RENT + (points - BASE_POINTS) * RATE_PER_POINT;
+}
+
+function calcWWS(input) {
+  const breakdown = [];
+
+  const roomPts = input.roomArea * 1;
+  breakdown.push(["Room surface area", roomPts]);
+
+  const otherPts = input.otherArea * 0.75;
+  breakdown.push(["Other spaces", otherPts]);
+
+  const heatingPts = Math.min((input.heatedRooms * 2) + (input.heatedOther * 1), (input.heatedRooms * 2) + 4);
+  // heated-other contribution capped at 4 pts total
+  const heatingPtsCapped = (input.heatedRooms * 2) + Math.min(input.heatedOther * 1, 4);
+  breakdown.push(["Heating", heatingPtsCapped]);
+
+  const labelPts = ENERGY_LABEL_POINTS[input.dwellingType][input.energyLabel];
+  breakdown.push(["Energy label (" + input.energyLabel + ")", labelPts]);
+
+  let kitchenPts = input.counterLen === "long" ? 7 : 4;
+  if (input.induction) kitchenPts += 1.75;
+  if (input.oven) kitchenPts += 1;
+  if (input.dishwasher) kitchenPts += 1.5;
+  breakdown.push(["Kitchen", kitchenPts]);
+
+  const sanitaryPts = (input.toilets * 3) + (input.sinks * 1) + (input.showers * 4) + (input.baths * 6);
+  breakdown.push(["Sanitary", sanitaryPts]);
+
+  const privateOutdoorPts = input.privateOutdoor > 0 ? (2 + input.privateOutdoor * 0.35) : 0;
+  const sharedOutdoorPts = input.sharedOutdoor > 0 ? (input.sharedOutdoor * 0.75) / Math.max(input.sharedAddresses, 1) : 0;
+  const outdoorPts = Math.min(privateOutdoorPts + sharedOutdoorPts, 15);
+  breakdown.push(["Outdoor space", outdoorPts]);
+
+  // WOZ Part II divides by the room (vertrekken) surface area only, not
+  // including other spaces — matches the official worked example.
+  const wozMin = 85806;
+  const wozValue = Math.max(input.wozValue, wozMin);
+  const wozPart1 = wozValue / 16954;
+  const wozPart2 = (input.roomArea > 0) ? (wozValue / input.roomArea) / 268 : 0;
+  let wozPts = wozPart1 + wozPart2;
+  breakdown.push(["WOZ value", wozPts]);
+
+  let subtotal = roomPts + otherPts + heatingPtsCapped + labelPts + kitchenPts + sanitaryPts + outdoorPts + wozPts;
+
+  // WOZ cap rule: if total >= 187, WOZ points count for max 33% of total.
+  let total = subtotal;
+  let wozCapped = false;
+  if (total >= FREE_SECTOR_POINTS) {
+    const maxWoz = 0.33 * total;
+    if (wozPts > maxWoz) {
+      wozCapped = true;
+      const nonWozPts = subtotal - wozPts;
+      // recompute assuming wozPts = maxWoz of new total: total = nonWoz + 0.33*total => total*(0.67) = nonWoz
+      let newTotal = nonWozPts / 0.67;
+      if (newTotal < FREE_SECTOR_POINTS) {
+        newTotal = 186; // dragged back into regulated mid-segment
+      }
+      total = newTotal;
+    }
+  }
+
+  total = Math.round(total);
+
+  let segment, maxRent;
+  if (total >= FREE_SECTOR_POINTS) {
+    segment = "free";
+    maxRent = null;
+  } else if (total <= SOCIAL_MAX_POINTS) {
+    segment = "social";
+    maxRent = Math.min(priceForPoints(total), SOCIAL_MAX_RENT);
+  } else {
+    segment = "mid";
+    maxRent = priceForPoints(total);
+  }
+
+  if (maxRent !== null) {
+    const surcharge = MONUMENT_SURCHARGE[input.monument] || 0;
+    maxRent = maxRent * (1 + surcharge);
+  }
+
+  return { total, segment, maxRent, breakdown, wozCapped };
+}
+
+function fmtEUR(n) {
+  return "€" + n.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtDate(d) {
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+}
+
+// Rent-reduction proposals must be sent at least 2 full calendar months
+// before the proposed effective date. Using the 1st of the month that is
+// three calendar months after the send month guarantees this for any send
+// day (matches the same convention used for annual rent-increase notices).
+function proposedEffectiveDate(sendDate) {
+  const d = new Date(sendDate.getFullYear(), sendDate.getMonth(), 1);
+  d.setMonth(d.getMonth() + 3);
+  return d;
+}
+
+function segmentLabel(segment) {
+  return segment === "social" ? "social rent" : segment === "mid" ? "regulated mid-rent" : "free sector";
+}
+
+function breakdownAsText(breakdown) {
+  return breakdown.map(([label, pts]) => "- " + label + ": " + pts.toFixed(2) + " pts").join("\n");
+}
+
+function buildEstablishedTenancyLetter(input, r, diff, opts) {
+  const today = new Date();
+  const todayStr = fmtDate(today);
+  const proposedStr = fmtDate(proposedEffectiveDate(today));
+  const seg = segmentLabel(r.segment);
+  const prefix = opts && opts.deadlinePassedNote ? opts.deadlinePassedNote + "\n\n" : "";
+
+  return prefix +
+`${input.yourName || "[Your name]"}
+${input.propertyAddress || "[Your address]"}
+
+${input.landlordName || "[Landlord / agency name]"}
+${input.landlordAddress || "[Landlord / agency address]"}
+
+${todayStr}
+
+Subject: Voorstel tot huurverlaging op grond van het puntenaantal (WWS) — Proposal for rent reduction based on the WWS points system
+
+Dear ${input.landlordName || "Sir/Madam"},
+
+I am writing about the tenancy agreement for ${input.propertyAddress || "[rental address]"}, currently at a bare rent (kale huur) of ${fmtEUR(input.currentRent)} per month.
+
+I have assessed the property under the Woningwaarderingsstelsel (WWS), the Dutch rent-points system that has been legally binding for the social and mid-rent segments since the Wet betaalbare huur took effect on 1 July 2024. Based on this assessment, the property scores ${r.total} points, placing it in the ${seg} segment with a maximum legal bare rent of ${fmtEUR(r.maxRent)} per month (Huurcommissie price table, effective 1 January 2026).
+
+A summary of this points calculation is included below.
+
+In line with my rights under Dutch tenancy law, I would like to propose reducing the rent to ${fmtEUR(r.maxRent)} per month, effective from ${proposedStr} — at least two full calendar months from the date of this letter, as required.
+
+Could you please confirm in writing whether you agree to this proposal? If I do not receive your agreement, or if we cannot reach one, I intend to submit this proposal to the Huurcommissie (Rent Tribunal) for a binding assessment, which is my right under Dutch law.
+
+I look forward to your response.
+
+Kind regards,
+${input.yourName || "[Your name]"}
+${todayStr}
+
+---
+WWS points summary
+${breakdownAsText(r.breakdown)}
+Total: ${r.total} points
+Segment: ${seg}
+Estimated maximum legal rent: ${fmtEUR(r.maxRent)} / month
+Current rent: ${fmtEUR(input.currentRent)} / month
+Estimated overpayment: ${fmtEUR(diff)} / month (${fmtEUR(diff * 12)} / year)`;
+}
+
+function buildNewTenancyLetter(input, r, diff, deadlineDate) {
+  const today = new Date();
+  const todayStr = fmtDate(today);
+  const seg = segmentLabel(r.segment);
+  const leaseStr = input.leaseStartDate ? fmtDate(new Date(input.leaseStartDate)) : "[lease start date]";
+  const deadlineStr = deadlineDate ? fmtDate(deadlineDate) : "6 months after your lease start date";
+
+  return `${input.yourName || "[Your name]"}
+${input.propertyAddress || "[Your address]"}
+
+${input.landlordName || "[Landlord / agency name]"}
+${input.landlordAddress || "[Landlord / agency address]"}
+
+${todayStr}
+
+Subject: Aanvangshuurprijs te hoog — Notice regarding the starting rent under the WWS points system
+
+Dear ${input.landlordName || "Sir/Madam"},
+
+I am writing about the tenancy agreement for ${input.propertyAddress || "[rental address]"}, which started on ${leaseStr} at a bare rent (kale huur) of ${fmtEUR(input.currentRent)} per month.
+
+Based on my assessment under the Woningwaarderingsstelsel (WWS), the Dutch rent-points system, the property scores ${r.total} points, corresponding to a maximum legal bare rent of ${fmtEUR(r.maxRent)} per month in the ${seg} segment (Huurcommissie price table, effective 1 January 2026) — lower than the rent agreed in our contract.
+
+I would like to propose adjusting the rent to ${fmtEUR(r.maxRent)} per month, effective from the start of the tenancy. If we are unable to agree, please note that Dutch law allows me to ask the Huurcommissie (Rent Tribunal) to formally assess the starting rent — a request I can submit within 6 months of the lease start date, i.e. by ${deadlineStr}.
+
+I look forward to hearing from you.
+
+Kind regards,
+${input.yourName || "[Your name]"}
+${todayStr}
+
+---
+WWS points summary
+${breakdownAsText(r.breakdown)}
+Total: ${r.total} points
+Segment: ${seg}
+Estimated maximum legal rent: ${fmtEUR(r.maxRent)} / month
+Current rent: ${fmtEUR(input.currentRent)} / month
+Estimated overpayment: ${fmtEUR(diff)} / month (${fmtEUR(diff * 12)} / year)
+
+---
+For filing with the Huurcommissie (toetsing aanvangshuurprijs)
+
+If you and your landlord cannot reach an agreement, you can file a "toetsing aanvangshuurprijs" request via MijnHuurcommissie (huurcommissie.nl) within 6 months of your lease start date — deadline: ${deadlineStr}. This is a fixed deadline that cannot be extended. The Huurcommissie requires a copy of your lease contract as part of the filing; this letter and the points summary above are useful supporting evidence but are not themselves the official filing.
+
+Case summary for your records:
+Property: ${input.propertyAddress || "[rental address]"}
+Lease start: ${leaseStr}
+Current bare rent: ${fmtEUR(input.currentRent)}
+Calculated points: ${r.total}
+Segment: ${seg}
+Estimated maximum legal rent: ${fmtEUR(r.maxRent)}
+Estimated overpayment: ${fmtEUR(diff)} / month`;
+}
+
+document.getElementById("calcForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const input = {
+    dwellingType: document.getElementById("dwellingType").value,
+    roomArea: parseFloat(document.getElementById("roomArea").value) || 0,
+    otherArea: parseFloat(document.getElementById("otherArea").value) || 0,
+    heatedRooms: parseFloat(document.getElementById("heatedRooms").value) || 0,
+    heatedOther: parseFloat(document.getElementById("heatedOther").value) || 0,
+    energyLabel: document.getElementById("energyLabel").value,
+    counterLen: document.getElementById("counterLen").value,
+    induction: document.getElementById("induction").checked,
+    oven: document.getElementById("oven").checked,
+    dishwasher: document.getElementById("dishwasher").checked,
+    toilets: parseFloat(document.getElementById("toilets").value) || 0,
+    sinks: parseFloat(document.getElementById("sinks").value) || 0,
+    showers: parseFloat(document.getElementById("showers").value) || 0,
+    baths: parseFloat(document.getElementById("baths").value) || 0,
+    privateOutdoor: parseFloat(document.getElementById("privateOutdoor").value) || 0,
+    sharedOutdoor: parseFloat(document.getElementById("sharedOutdoor").value) || 0,
+    sharedAddresses: parseFloat(document.getElementById("sharedAddresses").value) || 1,
+    wozValue: parseFloat(document.getElementById("wozValue").value) || 0,
+    monument: document.getElementById("monument").value,
+    currentRent: parseFloat(document.getElementById("currentRent").value) || 0,
+    tenancyLength: document.getElementById("tenancyLength").value,
+    yourName: document.getElementById("yourName").value.trim(),
+    propertyAddress: document.getElementById("propertyAddress").value.trim(),
+    landlordName: document.getElementById("landlordName").value.trim(),
+    landlordAddress: document.getElementById("landlordAddress").value.trim(),
+    leaseStartDate: document.getElementById("leaseStartDate").value
+  };
+
+  const r = calcWWS(input);
+
+  document.getElementById("pointsOut").textContent = r.total;
+  const badge = document.getElementById("segmentBadge");
+  if (r.segment === "social") { badge.textContent = "Social rent"; badge.className = "segment-badge segment-social"; }
+  else if (r.segment === "mid") { badge.textContent = "Mid-rent (regulated)"; badge.className = "segment-badge segment-mid"; }
+  else { badge.textContent = "Free sector"; badge.className = "segment-badge segment-free"; }
+
+  const maxRentOut = document.getElementById("maxRentOut");
+  const diffOut = document.getElementById("diffOut");
+  const verdictBox = document.getElementById("verdictBox");
+  const stepsBox = document.getElementById("stepsBox");
+
+  if (r.segment === "free") {
+    maxRentOut.textContent = "No legal max";
+    diffOut.textContent = "—";
+    verdictBox.className = "verdict free";
+    verdictBox.innerHTML = "<strong>Your home scores " + r.total + " points — 187+ puts it in the free sector.</strong> There is no statutory rent cap here, so a landlord can legally ask any price. Note: if you think the points count is wrong (e.g. an overstated WOZ value or energy label), correcting it could drop you below 187 and back into the regulated mid-rent segment.";
+    stepsBox.innerHTML = "";
+  } else {
+    maxRentOut.textContent = fmtEUR(r.maxRent);
+    const diff = input.currentRent - r.maxRent;
+    diffOut.textContent = (diff > 0 ? "+" : "") + fmtEUR(diff);
+
+    if (diff > 1) {
+      verdictBox.className = "verdict overpay";
+      verdictBox.innerHTML = "<strong>You may be overpaying by about " + fmtEUR(diff) + "/month</strong> (" + fmtEUR(diff * 12) + "/year), based on " + r.total + " points putting your home in the " + (r.segment === "social" ? "social" : "regulated mid-rent") + " segment.";
+      if (input.tenancyLength === "new") {
+        stepsBox.innerHTML = "<strong>Next steps (lease started &lt; 6 months ago):</strong><ol>" +
+          "<li>Ask your landlord for the official puntentelling (points breakdown) — they're legally required to provide it.</li>" +
+          "<li>File a free 'toetsing aanvangshuurprijs' request with the Huurcommissie within 6 months of your lease start date (€25 refundable deposit).</li>" +
+          "<li>If they rule in your favour, the lower rent applies retroactively to day one — you can then reclaim the difference from your landlord.</li>" +
+          "</ol>";
+      } else {
+        stepsBox.innerHTML = "<strong>Next steps (lease older than 6 months):</strong><ol>" +
+          "<li>Send your landlord a written rent-reduction proposal, with an effective date at least 2 full calendar months out.</li>" +
+          "<li>If they refuse or don't respond, take the proposal to the Huurcommissie (€25 refundable deposit).</li>" +
+          "<li>In the social/mid segment, the Huurcommissie's ruling is binding on the landlord.</li>" +
+          "</ol>";
+      }
+    } else {
+      verdictBox.className = "verdict ok";
+      verdictBox.innerHTML = "<strong>Your rent looks within the legal maximum</strong> for " + r.total + " points. No action needed based on this estimate.";
+      stepsBox.innerHTML = "";
+    }
+  }
+
+  const breakdownBox = document.getElementById("breakdownBox");
+  let rows = r.breakdown.map(([label, pts]) => "<tr><td>" + label + "</td><td>" + pts.toFixed(2) + " pts</td></tr>").join("");
+  if (r.wozCapped) rows += "<tr><td colspan='2' style='color:#b03a1f;'>WOZ points capped at 33% of total (187+ point rule) — total recalculated.</td></tr>";
+  breakdownBox.innerHTML = "<strong>Points breakdown</strong><table>" + rows + "</table>";
+
+  // --- Letter generation ---
+  const letterSection = document.getElementById("letterSection");
+  const letterTitle = document.getElementById("letterTitle");
+  const letterNote = document.getElementById("letterNote");
+  const deadlineFlag = document.getElementById("deadlineFlag");
+  const letterText = document.getElementById("letterText");
+
+  const overpaying = r.segment !== "free" && (input.currentRent - r.maxRent) > 1;
+
+  if (!overpaying) {
+    letterSection.style.display = "none";
+  } else {
+    const diff = input.currentRent - r.maxRent;
+    let deadlineDate = null;
+    let route = input.tenancyLength;
+    let deadlineNote = "";
+
+    if (input.tenancyLength === "new" && input.leaseStartDate) {
+      deadlineDate = new Date(input.leaseStartDate);
+      deadlineDate.setMonth(deadlineDate.getMonth() + 6);
+      const daysLeft = Math.ceil((deadlineDate - new Date()) / (1000 * 60 * 60 * 24));
+      if (daysLeft < 0) {
+        // 6-month filing window already closed — fall back to the
+        // established-tenancy route instead of drafting a letter for a
+        // deadline that's already passed.
+        route = "established";
+        deadlineNote = "Note: your 6-month window to request a toetsing aanvangshuurprijs closed on " + fmtDate(deadlineDate) + ", so this draft uses the standard rent-reduction-proposal route instead.";
+        deadlineFlag.textContent = "Your toetsing aanvangshuurprijs deadline (" + fmtDate(deadlineDate) + ") has passed — using the standard proposal route below.";
+      } else if (daysLeft <= 30) {
+        deadlineFlag.textContent = "Only " + daysLeft + " day(s) left to file a toetsing aanvangshuurprijs request (deadline: " + fmtDate(deadlineDate) + ").";
+      } else {
+        deadlineFlag.textContent = "Toetsing aanvangshuurprijs filing deadline: " + fmtDate(deadlineDate) + " (" + daysLeft + " days left).";
+      }
+    } else {
+      deadlineFlag.textContent = "";
+    }
+
+    if (route === "new") {
+      letterTitle.textContent = "Your letter — starting rent too high (new tenancy)";
+      letterNote.innerHTML = "Since your lease started less than 6 months ago, this draft covers both an initial note to your landlord and a case summary for filing a <em>toetsing aanvangshuurprijs</em> request with the Huurcommissie.";
+      letterText.value = buildNewTenancyLetter(input, r, diff, deadlineDate);
+    } else {
+      letterTitle.textContent = "Your letter — rent-reduction proposal";
+      letterNote.innerHTML = "A written proposal to your landlord, with a legally compliant effective date (at least 2 full calendar months out). If they don't agree, the next step is the Huurcommissie.";
+      letterText.value = buildEstablishedTenancyLetter(input, r, diff, deadlineNote ? { deadlinePassedNote: deadlineNote } : null);
+    }
+
+    letterSection.style.display = "block";
+  }
+
+  document.getElementById("result").style.display = "block";
+  document.getElementById("result").scrollIntoView({ behavior: "smooth" });
+});
+
+document.getElementById("copyLetterBtn").addEventListener("click", function() {
+  const ta = document.getElementById("letterText");
+  ta.select();
+  navigator.clipboard.writeText(ta.value).then(function() {
+    const btn = document.getElementById("copyLetterBtn");
+    const original = btn.textContent;
+    btn.textContent = "Copied!";
+    setTimeout(function() { btn.textContent = original; }, 1500);
+  }).catch(function() {
+    document.execCommand("copy");
+  });
+});
+
+document.getElementById("downloadLetterBtn").addEventListener("click", function() {
+  const text = document.getElementById("letterText").value;
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "rentvechter-letter.txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("printLetterBtn").addEventListener("click", function() {
+  window.print();
+});
+</script>
+
+</body>
+</html>
